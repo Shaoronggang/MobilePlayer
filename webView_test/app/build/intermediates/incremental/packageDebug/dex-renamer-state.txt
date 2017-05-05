@@ -1,0 +1,7 @@
+#Fri Jan 06 19:04:21 CST 2017
+base.0=E\:\\WorkCode\\MobilePlayer\\webView_test\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10\\instant-run_cfddaffd5a1c6f6e8ea0e1a7c9f980db31d895c0
+renamed.1=classes.dex
+renamed.0=classes2.dex
+file.1=E\:\\WorkCode\\MobilePlayer\\webView_test\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10\\instant-run-bootstrap_7168f61a370b0bad1d3a2ce5e89b4b9c3fa3575f\\classes.dex
+base.1=E\:\\WorkCode\\MobilePlayer\\webView_test\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10\\instant-run-bootstrap_7168f61a370b0bad1d3a2ce5e89b4b9c3fa3575f
+file.0=E\:\\WorkCode\\MobilePlayer\\webView_test\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10\\instant-run_cfddaffd5a1c6f6e8ea0e1a7c9f980db31d895c0\\classes.dex

@@ -1,0 +1,4 @@
+include ':app', ':SurfaceViewDemo', ':StartAllVideoPlayer', ':vitamio-sample', ':vitamio', ':xUtils3_sample', ':xutils', ':tryEventBus_simple', ':tryEventBus2', ':Android应用源码音乐实时跳动频谱显示Demo', ':SpeechDemo2', ':voicedialog'
+include ':xListView'
+include ':binderService'
+include ':speechDemo'

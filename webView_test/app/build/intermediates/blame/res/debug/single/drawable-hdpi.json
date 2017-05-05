@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "E:\\WorkCode\\MobilePlayer\\webView_test\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi\\btn_return_normal.png",
+        "source": "E:\\WorkCode\\MobilePlayer\\webView_test\\app\\src\\main\\res\\drawable-hdpi\\btn_return_normal.png"
+    },
+    {
+        "merged": "E:\\WorkCode\\MobilePlayer\\webView_test\\app\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi\\ic_launcher.png",
+        "source": "E:\\WorkCode\\MobilePlayer\\webView_test\\app\\src\\main\\res\\drawable-hdpi\\ic_launcher.png"
+    }
+]

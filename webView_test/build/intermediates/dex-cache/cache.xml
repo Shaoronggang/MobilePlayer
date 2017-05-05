@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="true"
+        jar="E:\WorkCode\MobilePlayer\webView_test\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="1879f4670bef5e2acd3af622730232548f2e9bd5">
+        <dex dex="E:\WorkCode\MobilePlayer\webView_test\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run_cfddaffd5a1c6f6e8ea0e1a7c9f980db31d895c0\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="E:\Android\android-sdk-windows\extras\android\m2repository\com\android\support\support-v4\19.1.0\support-v4-19.1.0.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="85f201b380937e61a9dce6ca90ccf6872abbfb67">
+        <dex dex="E:\WorkCode\MobilePlayer\webView_test\app\build\intermediates\transforms\dex\debug\folders\1000\10\support-v4-19.1.0_4e15ee0d3c840f37e5eadc0d2f2a50b43015193e\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="E:\WorkCode\MobilePlayer\webView_test\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="dfc86141afb6fa70a9bb88298121ce491000684a">
+        <dex dex="E:\WorkCode\MobilePlayer\webView_test\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run-bootstrap_7168f61a370b0bad1d3a2ce5e89b4b9c3fa3575f\classes.dex" />
+    </item>
+
+</items>

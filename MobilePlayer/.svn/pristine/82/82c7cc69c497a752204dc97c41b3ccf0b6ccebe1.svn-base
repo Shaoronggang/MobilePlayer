@@ -1,0 +1,400 @@
+package com.atguigu.mobileplayer.audio;
+
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.graphics.drawable.AnimationDrawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.RemoteException;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.atguigu.mobileplayer.IMusicPlayerService;
+import com.atguigu.mobileplayer.R;
+import com.atguigu.mobileplayer.Utils.Utils;
+import com.atguigu.mobileplayer.domain.MediaItem;
+
+import de.greenrobot.event.EventBus;
+
+/**
+ * 作者：杨光福 on 2016/4/25 09:19
+ * 微信：yangguangfu520
+ * QQ号：541433511
+ */
+public class AudioPlayerActivity extends Activity implements View.OnClickListener {
+
+    private static final int PROGRESS = 1;
+    private static final String TAG = AudioPlayerActivity.class.getSimpleName();
+    private ImageView ivIcon;
+    private TextView tvArtist;
+    private TextView tvName;
+    private TextView tvTime;
+    private SeekBar audioSeekBar;
+    private Button btnPlaymode;
+    private Button btnPre;
+    private Button btnPlayPause;
+    private Button btnNext;
+    private Button btnLyric;
+
+//    private MyReceiver receiver;
+    private Utils utils;
+    /**
+     * 音频播放列表的位置
+     */
+    private int position;
+    /**
+     * 是否来自状态栏
+     */
+    private boolean from_notification;
+
+
+    /**
+     * Find the Views in the layout<br />
+     * <br />
+     * Auto-created on 2016-04-25 09:43:53 by Android Layout Finder
+     * (http://www.buzzingandroid.com/tools/android-layout-finder)
+     */
+    private void findViews() {
+        ivIcon = (ImageView) findViewById(R.id.iv_icon);
+        tvArtist = (TextView) findViewById(R.id.tv_artist);
+        tvName = (TextView) findViewById(R.id.tv_name);
+        tvTime = (TextView) findViewById(R.id.tv_time);
+        audioSeekBar = (SeekBar) findViewById(R.id.audio_seekBar);
+        btnPlaymode = (Button) findViewById(R.id.btn_playmode);
+        btnPre = (Button) findViewById(R.id.btn_pre);
+        btnPlayPause = (Button) findViewById(R.id.btn_play_pause);
+        btnNext = (Button) findViewById(R.id.btn_next);
+        btnLyric = (Button) findViewById(R.id.btn_lyric);
+
+        btnPlaymode.setOnClickListener(this);
+        btnPre.setOnClickListener(this);
+        btnPlayPause.setOnClickListener(this);
+        btnNext.setOnClickListener(this);
+        btnLyric.setOnClickListener(this);
+
+        //播放动画
+        ivIcon.setBackgroundResource(R.drawable.animation_list);
+        AnimationDrawable animationDrawable = (AnimationDrawable) ivIcon.getBackground();
+        animationDrawable.start();
+
+        //设置拖动监听
+        audioSeekBar.setOnSeekBarChangeListener(new MyOnSeekBarChangeListener());
+    }
+
+    class MyOnSeekBarChangeListener implements SeekBar.OnSeekBarChangeListener {
+
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            if (fromUser) {
+                try {
+                    service.seekTo(progress);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+
+        }
+    }
+
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case PROGRESS:
+
+                    try {
+                        int currentPosition = service.getCurrentPosition();
+
+                        //进度的更新
+                        audioSeekBar.setProgress(currentPosition);
+
+                        //时间的更新
+                        tvTime.setText(utils.stringForTime(currentPosition) + "/" + utils.stringForTime(service.getDuration()));
+
+
+                        handler.sendEmptyMessageDelayed(PROGRESS, 1000);
+
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+
+
+                    break;
+            }
+        }
+    };
+
+    /**
+     * Handle button click events<br />
+     * <br />
+     * Auto-created on 2016-04-25 09:43:53 by Android Layout Finder
+     * (http://www.buzzingandroid.com/tools/android-layout-finder)
+     */
+    @Override
+    public void onClick(View v) {
+        if (v == btnPlaymode) {
+            setPlayMode();
+        } else if (v == btnPre) {
+            // Handle clicks for btnPre
+            try {
+                service.pre();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        } else if (v == btnPlayPause) {
+            try {
+                if (service.isPlaying()) {
+                    //暂停
+                    service.pause();
+                    //按钮设置播放状态
+                    btnPlayPause.setBackgroundResource(R.drawable.btn_play_audio_selector);
+                } else {
+                    //播放
+                    service.play();
+
+                    //按钮设置暂停状态
+                    btnPlayPause.setBackgroundResource(R.drawable.btn_pause_audio_selector);
+
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+            // Handle clicks for btnPlayPause
+        } else if (v == btnNext) {
+            // Handle clicks for btnNext
+            try {
+                service.next();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        } else if (v == btnLyric) {
+            // Handle clicks for btnLyric
+        }
+    }
+
+    private void setPlayMode() {
+        try {
+            int playmode = service.getPlayMode();
+
+            if (playmode == MusicPlayerService.REPEAT_NORMAL) {
+                playmode = MusicPlayerService.REPEAT_SINGLE;
+            } else if (playmode == MusicPlayerService.REPEAT_SINGLE) {
+                playmode = MusicPlayerService.REPEAT_ALL;
+            } else if (playmode == MusicPlayerService.REPEAT_ALL) {
+                playmode = MusicPlayerService.REPEAT_NORMAL;
+            } else {
+                playmode = MusicPlayerService.REPEAT_NORMAL;
+            }
+
+            //保持到Service中
+            service.setPlayMode(playmode);
+
+            showPlayMode();
+
+
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void showPlayMode() {
+        try {
+            int playmode = service.getPlayMode();
+
+            if (playmode == MusicPlayerService.REPEAT_NORMAL) {
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_normal_selector);
+                Toast.makeText(AudioPlayerActivity.this, "顺序播放", Toast.LENGTH_SHORT).show();
+
+            } else if (playmode == MusicPlayerService.REPEAT_SINGLE) {
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_single_selector);
+                Toast.makeText(AudioPlayerActivity.this, "单曲播放", Toast.LENGTH_SHORT).show();
+            } else if (playmode == MusicPlayerService.REPEAT_ALL) {
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_all_selector);
+                Toast.makeText(AudioPlayerActivity.this, "全部播放", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(AudioPlayerActivity.this, "顺序播放", Toast.LENGTH_SHORT).show();
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_normal_selector);
+            }
+
+
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void setPlayModeButtonStatus() {
+        try {
+            int playmode = service.getPlayMode();
+
+            if (playmode == MusicPlayerService.REPEAT_NORMAL) {
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_normal_selector);
+
+            } else if (playmode == MusicPlayerService.REPEAT_SINGLE) {
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_single_selector);
+            } else if (playmode == MusicPlayerService.REPEAT_ALL) {
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_all_selector);
+            } else {
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_normal_selector);
+            }
+
+
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_audioplayer);
+        initData();
+        findViews();
+        getData();
+        bindAndStartService();
+    }
+
+    private void initData() {
+        utils = new Utils();
+        //注册广播
+//        receiver = new MyReceiver();
+//        IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction(MusicPlayerService.ONPEN_AUDIO);
+//        registerReceiver(receiver, intentFilter);
+
+        //1.注册EventBus
+        EventBus.getDefault().register(this);
+    }
+
+//    class MyReceiver extends BroadcastReceiver {
+//
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            if (intent.getAction().equals(MusicPlayerService.ONPEN_AUDIO)) {
+//
+//                setViewData();
+//            }
+//
+//        }
+//    }
+
+    public void onEventMainThread(MediaItem mediaItem) {
+        Log.e(TAG,"当前线程名称=="+Thread.currentThread().getName());
+        setViewData();
+    }
+
+    private void setViewData() {
+        try {
+            tvArtist.setText(service.getArtist());
+            tvName.setText(service.getAudioName());
+            audioSeekBar.setMax(service.getDuration());
+
+
+            handler.sendEmptyMessage(PROGRESS);
+
+            setPlayModeButtonStatus();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void getData() {
+        from_notification = getIntent().getBooleanExtra("notification", false);
+        if (!from_notification) {
+            position = getIntent().getIntExtra("position", 0);
+        }
+
+    }
+
+    /**
+     * 服务的代理类，可以操作服务
+     */
+    private IMusicPlayerService service;
+
+    private ServiceConnection conn = new ServiceConnection() {
+        /**
+         * 当Activity和Service绑定成功后回调这个方法
+         * @param name
+         * @param iBinder
+         */
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder iBinder) {
+            service = IMusicPlayerService.Stub.asInterface(iBinder);
+            if (service != null) {
+                try {
+                    if (!from_notification) {
+                        service.openAudio(position);
+                    } else {
+                        //如果是从状态栏启动当前Activity的
+                        //刷新状态
+                        service.notifyChange(MusicPlayerService.ONPEN_AUDIO);
+                    }
+
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        /**
+         * 当Activity和Service断开连接的时候回调这个方法
+         * @param name
+         */
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
+
+    /**
+     * 启动服务
+     */
+    private void bindAndStartService() {
+        Intent intent = new Intent(this, MusicPlayerService.class);
+        intent.setAction("com.atguigu.mobileplayer_OPENAUDIO");
+        bindService(intent, conn, Context.BIND_AUTO_CREATE);
+        startService(intent);//防止多次创建服务
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        if (conn != null) {
+            unbindService(conn);
+            conn = null;
+        }
+//        if (receiver != null) {
+//            unregisterReceiver(receiver);
+//            receiver = null;
+//        }
+
+        handler.removeCallbacksAndMessages(null);
+
+        //2.取消注册EventBus
+        EventBus.getDefault().unregister(this);
+
+        super.onDestroy();
+    }
+}

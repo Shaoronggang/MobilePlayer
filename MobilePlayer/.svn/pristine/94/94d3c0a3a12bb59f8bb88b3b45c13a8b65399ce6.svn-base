@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.atguigu.speechdemo2.MainActivity">
+
+    <EditText
+        android:id="@+id/et_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="输入信息" />
+
+    <Button
+        android:id="@+id/btn_voice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="语音输入" />
+
+
+    <Button
+        android:id="@+id/speektext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="把文字转换成声音" />
+</LinearLayout>

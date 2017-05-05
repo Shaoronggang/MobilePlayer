@@ -1,0 +1,215 @@
+package com.atguigu.mobileplayer.audio;
+
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.graphics.drawable.AnimationDrawable;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.SeekBar;
+import android.widget.TextView;
+
+import com.atguigu.mobileplayer.IMusicPlayerService;
+import com.atguigu.mobileplayer.R;
+
+/**
+ * 作者：杨光福 on 2016/4/25 09:19
+ * 微信：yangguangfu520
+ * QQ号：541433511
+ */
+public class AudioPlayerActivity extends Activity implements View.OnClickListener {
+
+    private ImageView ivIcon;
+    private TextView tvArtist;
+    private TextView tvName;
+    private TextView tvTime;
+    private SeekBar audioSeekBar;
+    private Button btnPlaymode;
+    private Button btnPre;
+    private Button btnPlayPause;
+    private Button btnNext;
+    private Button btnLyric;
+
+    private MyReceiver receiver;
+    /**
+     * 音频播放列表的位置
+     */
+    private int position;
+
+
+    /**
+     * Find the Views in the layout<br />
+     * <br />
+     * Auto-created on 2016-04-25 09:43:53 by Android Layout Finder
+     * (http://www.buzzingandroid.com/tools/android-layout-finder)
+     */
+    private void findViews() {
+        ivIcon = (ImageView)findViewById( R.id.iv_icon );
+        tvArtist = (TextView)findViewById( R.id.tv_artist );
+        tvName = (TextView)findViewById( R.id.tv_name );
+        tvTime = (TextView)findViewById( R.id.tv_time );
+        audioSeekBar = (SeekBar)findViewById( R.id.audio_seekBar );
+        btnPlaymode = (Button)findViewById( R.id.btn_playmode );
+        btnPre = (Button)findViewById( R.id.btn_pre );
+        btnPlayPause = (Button)findViewById( R.id.btn_play_pause );
+        btnNext = (Button)findViewById( R.id.btn_next );
+        btnLyric = (Button)findViewById( R.id.btn_lyric );
+
+        btnPlaymode.setOnClickListener( this );
+        btnPre.setOnClickListener( this );
+        btnPlayPause.setOnClickListener( this );
+        btnNext.setOnClickListener( this );
+        btnLyric.setOnClickListener( this );
+
+        //播放动画
+        ivIcon.setBackgroundResource(R.drawable.animation_list);
+        AnimationDrawable animationDrawable = (AnimationDrawable) ivIcon.getBackground();
+        animationDrawable.start();
+    }
+
+    /**
+     * Handle button click events<br />
+     * <br />
+     * Auto-created on 2016-04-25 09:43:53 by Android Layout Finder
+     * (http://www.buzzingandroid.com/tools/android-layout-finder)
+     */
+    @Override
+    public void onClick(View v) {
+        if ( v == btnPlaymode ) {
+            // Handle clicks for btnPlaymode
+        } else if ( v == btnPre ) {
+            // Handle clicks for btnPre
+        } else if ( v == btnPlayPause ) {
+            try {
+                if(service.isPlaying()){
+                    //暂停
+                    service.pause();
+                    //按钮设置播放状态
+                    btnPlayPause.setBackgroundResource(R.drawable.btn_play_audio_selector);
+                }else{
+                    //播放
+                    service.play();
+
+                    //按钮设置暂停状态
+                    btnPlayPause.setBackgroundResource(R.drawable.btn_pause_audio_selector);
+
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+            // Handle clicks for btnPlayPause
+        } else if ( v == btnNext ) {
+            // Handle clicks for btnNext
+        } else if ( v == btnLyric ) {
+            // Handle clicks for btnLyric
+        }
+    }
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_audioplayer);
+        initData();
+        findViews();
+        getData();
+        bindAndStartService();
+    }
+
+    private void initData() {
+        //注册广播
+        receiver = new MyReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(MusicPlayerService.ONPEN_AUDIO);
+        registerReceiver(receiver, intentFilter);
+    }
+    class MyReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(MusicPlayerService.ONPEN_AUDIO)){
+
+                setViewData();
+            }
+
+        }
+    }
+
+    private void setViewData() {
+        try {
+            tvArtist.setText(service.getArtist());
+            tvName.setText(service.getAudioName());
+            audioSeekBar.setMax(service.getDuration());
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void getData() {
+        position = getIntent().getIntExtra("position",0);
+    }
+
+    /**
+     * 服务的代理类，可以操作服务
+     */
+    private IMusicPlayerService service;
+
+    private ServiceConnection conn = new ServiceConnection() {
+        /**
+         * 当Activity和Service绑定成功后回调这个方法
+         * @param name
+         * @param iBinder
+         */
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder iBinder) {
+            service =  IMusicPlayerService.Stub.asInterface(iBinder);
+            if(service != null){
+                try {
+                    service.openAudio(position);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        /**
+         * 当Activity和Service断开连接的时候回调这个方法
+         * @param name
+         */
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
+    /**
+     * 启动服务
+     */
+    private void bindAndStartService() {
+        Intent intent = new Intent(this,MusicPlayerService.class);
+        intent.setAction("com.atguigu.mobileplayer_OPENAUDIO");
+        bindService(intent, conn, Context.BIND_AUTO_CREATE);
+        startService(intent);//防止多次创建服务
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(conn != null){
+            unbindService(conn);
+            conn = null;
+        }
+        if(receiver != null){
+            unregisterReceiver(receiver);
+            receiver = null;
+        }
+
+    }
+}

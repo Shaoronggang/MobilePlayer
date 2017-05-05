@@ -1,0 +1,3 @@
+include ':app', ':SurfaceViewDemo', ':StartAllVideoPlayer', ':vitamio-sample', ':vitamio', ':xUtils3_sample', ':xutils'
+include ':xListView'
+include ':binderService'

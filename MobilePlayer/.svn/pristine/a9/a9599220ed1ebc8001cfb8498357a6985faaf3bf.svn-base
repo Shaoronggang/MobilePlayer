@@ -1,0 +1,324 @@
+package com.atguigu.mobileplayer.audio;
+
+import android.app.Service;
+import android.content.ContentResolver;
+import android.content.Intent;
+import android.database.Cursor;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.IBinder;
+import android.os.RemoteException;
+import android.provider.MediaStore;
+import android.support.annotation.Nullable;
+import android.widget.Toast;
+
+import com.atguigu.mobileplayer.IMusicPlayerService;
+import com.atguigu.mobileplayer.domain.MediaItem;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+/**
+ * 作者：杨光福 on 2016/4/25 10:26
+ * 微信：yangguangfu520
+ * QQ号：541433511
+ * 作用：xxxx
+ */
+public class MusicPlayerService extends Service {
+
+    /**
+     * 是MusicPlayerService的代理类，可以通过它调用MusicPlayerService的方法和字段
+     */
+    IMusicPlayerService.Stub stub = new IMusicPlayerService.Stub() {
+        MusicPlayerService service = MusicPlayerService.this;
+        @Override
+        public void openAudio(int position) throws RemoteException {
+            service.openAudio(position);
+
+        }
+
+        @Override
+        public void play() throws RemoteException {
+            service.play();
+
+        }
+
+        @Override
+        public void pause() throws RemoteException {
+            service.pause();
+
+        }
+
+        @Override
+        public void next() throws RemoteException {
+            service.next();
+        }
+
+        @Override
+        public void pre() throws RemoteException {
+            service.pre();
+
+        }
+
+        @Override
+        public void seekTo(int position) throws RemoteException {
+            service.seekTo(position);
+
+        }
+
+        @Override
+        public int getCurrentPosition() throws RemoteException {
+            return service.getCurrentPosition();
+        }
+
+        @Override
+        public int getDuration() throws RemoteException {
+            return service.getDuration();
+        }
+
+        @Override
+        public boolean isPlaying() throws RemoteException {
+            return service.isPlaying();
+        }
+
+        @Override
+        public void setPlayMode(int playmode) throws RemoteException {
+            service.setPlayMode(playmode);
+        }
+
+        @Override
+        public int getPlayMode() throws RemoteException {
+            return service.getPlayMode();
+        }
+    };
+    /**
+     * 音频列表
+     */
+    private ArrayList<MediaItem> mediaItems;
+    /**
+     * 一条多媒体信息
+     */
+    private MediaItem mediaItem;
+
+    /**
+     * 可以播放视频也可以播放音频
+     */
+    private MediaPlayer mediaPlayer;
+
+    /**
+     * 得到手机里面视频信息
+     */
+    private void getData() {
+
+        new Thread(){
+            @Override
+            public void run() {
+                super.run();
+
+                mediaItems = new ArrayList<>();
+                ContentResolver resolver = getContentResolver();
+                Uri videoUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                String[] table = {
+                        MediaStore.Audio.Media.DISPLAY_NAME,//在Sdcard上的名称
+                        MediaStore.Audio.Media.DURATION,//视频的时长
+                        MediaStore.Audio.Media.SIZE,//视频的大小
+                        MediaStore.Audio.Media.DATA,//视频存储的绝对地址
+                        MediaStore.Audio.Media.ARTIST
+                };
+                Cursor cursor =  resolver.query(videoUri, table, null, null, null);
+                if(cursor != null){
+
+                    while (cursor.moveToNext()){
+
+                        MediaItem mediaItem = new MediaItem();
+
+                        String name = cursor.getString(0);
+                        mediaItem.setName(name);
+
+                        long duration = cursor.getLong(1);
+                        mediaItem.setDuration(duration);
+
+                        long size = cursor.getLong(2);
+                        mediaItem.setSize(size);
+
+                        String data = cursor.getString(3);
+//                        String data = "http://vfx.mtime.cn/Video/2016/04/14/mp4/160414103101304893_480.mp4";
+//                        String data = "http://cctv13.vtime.cntv.cloudcdn.net:8500/live/no/23_/seg0/index.m3u8?uid=default&AUTH=FU12TwMPtlErIkWAU6HuKXNc9BzhF4+TyDTS17c+Ef9oZtDUzK3QHsxZ8sdw6RdMCwYClrYe0ST8LeH7Os8X5Q==";
+
+
+                        mediaItem.setData(data);
+
+                        String artist = cursor.getString(4);
+                        mediaItem.setArtist(artist);
+
+
+                        mediaItems.add(mediaItem);
+
+                    }
+
+                    cursor.close();
+                }
+
+
+
+            }
+        }.start();
+
+
+
+
+    }
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        System.out.println("onBind--service");
+        return stub;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        System.out.println("onCreate--service");
+        getData();
+    }
+
+    /**
+     * 根据位置打开音频
+     * @param position
+     */
+    private void openAudio(int position){
+
+
+        if(mediaItems != null && mediaItems.size()>0){
+
+            try {
+                mediaItem = mediaItems.get(position);
+
+                if(mediaPlayer != null){
+                    mediaPlayer.reset();
+                    mediaPlayer.release();
+                    mediaPlayer = null;
+                }
+
+                mediaPlayer = new MediaPlayer();
+                //设置准备好的监听
+                mediaPlayer.setOnPreparedListener(new MyOnPreparedListener());
+                //监听播放出错
+                mediaPlayer.setOnErrorListener(new MyOnErrorListener());
+                //监听播放完成
+                mediaPlayer.setOnCompletionListener(new MyOnCompletionListener());
+                mediaPlayer.setDataSource(mediaItem.getData());
+                mediaPlayer.prepareAsync();//异步
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }else{
+            Toast.makeText(MusicPlayerService.this, "没有数据", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+    class MyOnCompletionListener implements MediaPlayer.OnCompletionListener {
+
+        @Override
+        public void onCompletion(MediaPlayer mp) {
+            next();
+        }
+    }
+    class MyOnErrorListener implements MediaPlayer.OnErrorListener {
+
+        @Override
+        public boolean onError(MediaPlayer mp, int what, int extra) {
+            next();
+            return true;
+        }
+    }
+
+    class MyOnPreparedListener implements MediaPlayer.OnPreparedListener {
+
+        @Override
+        public void onPrepared(MediaPlayer mp) {
+            play();
+        }
+    }
+
+    /**
+     * 音频的播放
+     */
+    private void play(){
+      mediaPlayer.start();
+    }
+
+    /**
+     * 音频的暂停
+     */
+    private void pause(){
+        mediaPlayer.pause();
+    }
+
+
+    /**
+    播放下一个音频
+     */
+    private void  next(){
+
+    }
+
+    /**
+     播放上一个音频
+     */
+    private void  pre(){
+
+    }
+
+    /**
+     * 音频的拖动
+     * @param position
+     */
+    private void seekTo(int position){
+
+    }
+
+    /**
+     * 得到当前的播放位置
+     * @return
+     */
+    private int getCurrentPosition(){
+        return  0;
+    }
+
+    /**
+     * 得到总时长
+     * @return
+     */
+    private int getDuration(){
+        return 0;
+    }
+
+    /**
+     * 判断是否在播放音频
+     * @return
+     */
+    private boolean isPlaying(){
+        return  false;
+    }
+
+    /**
+     * 设置播放模式
+     * @param playmode
+     */
+    private void setPlayMode(int playmode){
+
+    }
+
+    /**
+     * 得到播放模式
+     * @return
+     */
+    private int getPlayMode(){
+        return  0;
+    }
+
+
+
+}

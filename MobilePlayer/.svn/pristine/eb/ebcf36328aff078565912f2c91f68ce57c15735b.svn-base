@@ -1,0 +1,68 @@
+package com.atguigu.mobileplayer;
+
+import android.app.Activity;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Bundle;
+import android.widget.MediaController;
+import android.widget.Toast;
+import android.widget.VideoView;
+
+/**
+ * 作者：杨光福 on 2016/4/20 16:29
+ * 微信：yangguangfu520
+ * QQ号：541433511
+ * 作用：xxxx
+ */
+public class SystemVideoPlayer extends Activity {
+
+    private Uri uri;
+    private VideoView videview;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_system_video_player);
+        videview = (VideoView) findViewById(R.id.videview);
+        uri = getIntent().getData();
+
+        //设置监听
+        //准备好的监听
+        videview.setOnPreparedListener(new MyOnPreparedListener());
+        //监听播放出错
+        videview.setOnErrorListener(new MyOnErrorListener());
+        //监听监听播放完成
+        videview.setOnCompletionListener(new MyOnCompletionListener());
+
+        //设置播放地址
+        videview.setVideoURI(uri);
+
+        //设置控制面板
+        videview.setMediaController(new MediaController(this));
+    }
+
+
+    class MyOnPreparedListener implements MediaPlayer.OnPreparedListener {
+
+        @Override
+        public void onPrepared(MediaPlayer mp) {
+            videview.start();
+        }
+    }
+    class MyOnErrorListener implements MediaPlayer.OnErrorListener {
+
+        @Override
+        public boolean onError(MediaPlayer mp, int what, int extra) {
+            Toast.makeText(SystemVideoPlayer.this,"播放出错了",Toast.LENGTH_SHORT).show();
+            return true;
+        }
+    }
+
+    class MyOnCompletionListener implements MediaPlayer.OnCompletionListener {
+
+        @Override
+        public void onCompletion(MediaPlayer mp) {
+            //退出播放器或者播放下一个
+            finish();
+        }
+    }
+}

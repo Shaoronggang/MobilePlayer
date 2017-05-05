@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "E:\\WorkCode\\MobilePlayer\\webView_test\\app\\build\\intermediates\\res\\merged\\debug\\layout\\activity_esw_video.xml",
+        "source": "E:\\WorkCode\\MobilePlayer\\webView_test\\app\\src\\main\\res\\layout\\activity_esw_video.xml"
+    },
+    {
+        "merged": "E:\\WorkCode\\MobilePlayer\\webView_test\\app\\build\\intermediates\\res\\merged\\debug\\layout\\activity_main.xml",
+        "source": "E:\\WorkCode\\MobilePlayer\\webView_test\\app\\src\\main\\res\\layout\\activity_main.xml"
+    }
+]

@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "E:\\WorkCode\\MobilePlayer\\MobilePlayer\\speechDemo\\build\\intermediates\\res\\merged\\debug\\drawable\\setting_p.png",
+        "source": "E:\\WorkCode\\MobilePlayer\\MobilePlayer\\speechDemo\\src\\main\\res\\drawable\\setting_p.png"
+    },
+    {
+        "merged": "E:\\WorkCode\\MobilePlayer\\MobilePlayer\\speechDemo\\build\\intermediates\\res\\merged\\debug\\drawable\\setting.png",
+        "source": "E:\\WorkCode\\MobilePlayer\\MobilePlayer\\speechDemo\\src\\main\\res\\drawable\\setting.png"
+    },
+    {
+        "merged": "E:\\WorkCode\\MobilePlayer\\MobilePlayer\\speechDemo\\build\\intermediates\\res\\merged\\debug\\drawable\\main_setting_btn_np.xml",
+        "source": "E:\\WorkCode\\MobilePlayer\\MobilePlayer\\speechDemo\\src\\main\\res\\drawable\\main_setting_btn_np.xml"
+    },
+    {
+        "merged": "E:\\WorkCode\\MobilePlayer\\MobilePlayer\\speechDemo\\build\\intermediates\\res\\merged\\debug\\drawable\\list_bg_color.xml",
+        "source": "E:\\WorkCode\\MobilePlayer\\MobilePlayer\\speechDemo\\src\\main\\res\\drawable\\list_bg_color.xml"
+    }
+]
